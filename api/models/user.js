@@ -9,6 +9,10 @@ let userSchema = mongoose.Schema({
   authorized: {type: Boolean, default: false},
   registred: {type: Date, default: Date.now},
   lastLogin: {type: Date, default: Date.now},
+  token: {
+    type: String,
+    default: '',
+  },
 });
 
 // methods ======================

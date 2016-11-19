@@ -2,7 +2,15 @@
 
 const express = require('express');
 const passport = require('passport');
+const User = require('../models/user');
 let router = express.Router();
+
+function userInformation(user) {
+  return {
+    email: user.email,
+    token: user.token,
+  }
+}
 
 router.get('/login', (req, res) => {
   res.json({
@@ -10,8 +18,35 @@ router.get('/login', (req, res) => {
   });
 });
 
+// router.get('/token', passport.authenticate('bearer', { session: false }),
+//   function(req, res) {
+//     console.log('token auth');
+//     res.json({
+//       success: true,
+//       data: req.user
+//     });
+//   });
+
+router.get('/token', (req, res, next) => {
+  passport.authenticate('bearer', { session: false }, (err, user, info) => {
+    if (err) {
+      return next(err); // will generate a 500 error
+    }
+    if (info && !user) {
+      return res.status(401).json({error: info});
+    }
+    if (!user) {
+      return res.status(401).json({ success: false, error: 'authentication failed' });
+    }
+    res.status(200).json({
+      success: true,
+      data: user,
+    })
+  })(req, res, next);
+});
+
 router.get('/loadauth', (req, res) => {
-  console.log(req.user);
+  // console.log(req.header('Authorization'));
   res.json({
     data: req.user || null,
   });
@@ -34,23 +69,33 @@ router.post('/login', (req, res, next) => {
       }
       res.json({
         success: true,
-        data: {
-          email: user.email,
-        }
+        data: userInformation(user),
       });
     });
   })(req, res, next);
 });
 
-router.get('/logout', (req, res) => {
-  req.logout();
-  res.status(200).json({
-    message: 'ok',
-  });
+router.get('/logout', (req, res, next) => {
+  passport.authenticate('bearer', { session: false }, (err, user, info) => {
+    if (user) {
+      User.update({ _id: user.id }, { $set: { token: '' }}, (err) => {
+        if (err) {
+          res.status(500).json({});
+        } else {
+          res.status(200).json({
+            message: 'ok',
+          });
+        }
+      });
+    } else {
+      res.status(200).json({
+        message: 'ok',
+      });
+    }
+  })(req, res, next);
 });
 
 router.post('/signup', (req, res, next) => {
-  // console.log(req.body);
   passport.authenticate('local-signup', { session: false }, (err, user, info) => {
     if (err) {
       return next(err); // will generate a 500 error
@@ -60,18 +105,15 @@ router.post('/signup', (req, res, next) => {
       return res.status(info.status || '401').json({error: info.error || info.message});
     }
     if (!user) {
-      return res.status(401).json({ success: false, error: 'registration failed' });
+      return res.status(401).json({ success: false,  error: 'registration failed' });
     }
-    // console.log(user);
     req.login(user, loginErr => {
       if (loginErr) {
         return next(loginErr);
       }
       res.json({
         success: true,
-        data: {
-          email: user.email,
-        }
+        data: userInformation(user),
       });
     });
   })(req, res, next);

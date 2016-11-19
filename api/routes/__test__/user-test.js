@@ -12,33 +12,12 @@ const testUser = {
   email: 'user@example.com',
   password: '123',
 };
-let Cookie;
+let token;
+let tokenOld;
 
-describe('User router', function() {
+describe('User router: ', function() {
   after(done => {
     User.find({email: testUser.email}).remove(() => {done()});
-  });
-
-  it('test', function(done) {
-    chai.request(api)
-      .get('/user/login')
-      .end((err, res) => {
-        res.should.have.status(200);
-        res.body.router.should.equal('login');
-        res.body.should.be.a('object');
-        done();
-      });
-  });
-
-  it('test url', function(done) {
-    chai.request(api)
-      .post('/test')
-      .set('Accept','application/json')
-      .send({"email": "user_test@example.com", "password": "123"})
-      .end((err, res) => {
-        res.should.have.status(200);
-        done();
-      });
   });
 
   it('invalid user email', (done) => {
@@ -47,7 +26,6 @@ describe('User router', function() {
       .set('Accept','application/json')
       .send({"email": "userexample.com", "password": "123"})
       .end((err, res) => {
-        // console.log(res.body);
         res.should.have.status(400);
         done();
       });
@@ -59,22 +37,60 @@ describe('User router', function() {
       .set('Accept','application/json')
       .send(testUser)
       .end((err, res) => {
+        // console.log(res.body);
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.data.email.should.equal(testUser.email);
-        Cookie = res.headers['set-cookie'].pop().split(';')[0];
+        res.body.data.should.have.property('token');
+        res.body.data.token.should.not.be.empty;
+        token = res.body.data.token;
+        done();
+      });
+  });
+
+  it('user logout', (done) => {
+    chai.request(api)
+      .get('/user/logout')
+      .set('Accept','application/json')
+      .set('Authorization', 'Bearer ' + token)
+      .end((err, res) => {
+        User.findOne({token: token}, (err, user) => {
+          if (!err && !user) {
+            done();
+          }
+        })
+      });
+  });
+
+  it('user login', (done) => {
+    tokenOld = token;
+    chai.request(api)
+      .post('/user/login')
+      .set('Accept','application/json')
+      .send(testUser)
+      .end((err,res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.data.email.should.equal(testUser.email);
+        res.body.data.should.have.property('token');
+        res.body.data.token.should.not.be.empty;
+        res.body.data.token.should.not.equal(tokenOld);
+        token = res.body.data.token;
         done();
       });
   });
 
   it('should get user information', (done) => {
-    const req = chai.request(api).get('/user/loadauth');
-    req.cookies = Cookie;
-    req.end((err, res) => {
-      res.should.have.status(200);
-      res.body.data.email.should.equal(testUser.email);
-      done();
-    });
+    chai.request(api)
+      .get('/user/token')
+      .set('Accept','application/json')
+      .set('Authorization', 'Bearer ' + token)
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.data.should.be.a('object');
+        done();
+      });
   });
 
 });

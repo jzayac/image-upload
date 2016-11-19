@@ -1,38 +1,40 @@
 'use strict'
 
 const express = require('express');
-const session = require('express-session');
-const cookieParser = require('cookie-parser');
+// const session = require('express-session');
+// const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const morgan = require('morgan');
-const passportConf = require('./config/passport');
+// const passportConf = require('./config/passport');
 const mongoose = require('mongoose');
 const config = require('./config/config');
 
+require('./config/passport');
 const imageRouter = require('./routes/image');
 const userRouter = require('./routes/user');
+
 
 if (config.mongoose) {
   mongoose.connect(config.mongoDbUrl);
 }
-passportConf(passport);
+// passportConf(passport);
 
 
 const app = express();
 
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(bodyParser.json());
-// app.use( bodyParser.urlencoded({ extended: true }) );
-app.use(session({
-  secret: config.sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 60000 }
-}));
+app.use( bodyParser.urlencoded({ extended: true }) );
+// app.use(session({
+//   secret: config.sessionSecret,
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: { maxAge: 60000 }
+// }));
 
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
 
 app.use('/image', imageRouter);
 app.use('/user', userRouter);

@@ -17,8 +17,6 @@ function validate(value, name) {
 
   that.isEmail = function() {
     if ( !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
-      console.log('invalid email');
-      console.log(value);
       error.push(name + ' invalid');
     }
     return this;

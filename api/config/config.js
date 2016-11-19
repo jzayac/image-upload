@@ -7,4 +7,5 @@ module.exports = Object.assign({
     mongoDbUrl: url,
     mongoose: true,
     sessionSecret: 'super seacret',
+    tokenSecret: 'super seacret',
 }, config);
