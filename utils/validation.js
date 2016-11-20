@@ -10,6 +10,7 @@ function validate(value, name) {
 
   that.isRequired = function() {
     if (isEmpty(value)) {
+      value = '';
       error.push(name + ' is required');
     }
     return this;
@@ -25,6 +26,12 @@ function validate(value, name) {
   that.isString = function() {
     if (!(/^([a-zA-Z0-9 _-]+)$/).test(value)) {
       error.push(name + ' not valid. only letters, numbers, _- is allowed');
+    }
+    return this;
+  }
+  that.noSpace = function() {
+    if (value.indexOf(' ') >= 0) {
+      error.push(name + ' not valid. empty spaces not allowed');
     }
     return this;
   }

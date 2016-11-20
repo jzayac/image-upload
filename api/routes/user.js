@@ -3,6 +3,7 @@
 const express = require('express');
 const passport = require('passport');
 const User = require('../models/user');
+const validate = require('../../utils/validation');
 let router = express.Router();
 
 function userInformation(user) {
@@ -29,27 +30,43 @@ router.get('/login', (req, res) => {
 
 router.post('/changepass', passport.authenticate('bearer', { session: false }),
     function(req, res) {
-      // console.log(arguments[1]);
-      // console.log(req.user);
-      User.findOne(req.user.id, (err, user) => {
-        // console.log(user.generateHash)
-        console.log(user);
-        res.status(200).json(user);
+      // TODO: change also token
+      const body = req.body;
+      // console.log(body);
+      const erPass = validate(body.password, 'password').isRequired().isString().noSpace().exec();
+      const erPassNew = validate(body.newPassword, 'new password').isRequired().isString().noSpace().exec();
+      if (erPass || erPassNew) {
+        const error = erPass ? erPass.concat(erPassNew || []) : erPassNew.concat(erPass);
+        return res.status(400).json({
+          sucess: false,
+          error: error,
+        });
+      }
+      User.changePass(req.user.id, body.password, body.newPassword, (err, user, invalid) => {
+        if (err) {
+          console.log('error');
+          console.log(err);
+          return res.status(500).send();
+        }
+        if (invalid) {
+          return res.status(400).json({
+            success: false,
+            error: invalid,
+          });
+        }
+        if (user) {
+          return res.status(200).json({
+            success: true,
+            data: {
+              token: user.token,
+            }
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          error: 'unknown error',
+        });
       });
-      // res.status(200).json({});
-
-      // if (err) {
-      //   // console.log(err);
-      //   return res.status(500).json({error: 'o_O oh nooooooooo'});
-      // }
-      // if (!user) {
-      //   return res.status(401).json({ success: false, error: 'authentication failed' });
-      // }
-      // // console.log(user);
-      // User.findOne({token: user.token}, (err, user) => {
-      //   // console.log(user.generateHash)
-      //   res.status(200).json(user);
-      // });
     }
 );
 

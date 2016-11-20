@@ -9,13 +9,16 @@ const User = require('../../models/user');
 
 chai.use(chaiHttp);
 const testUser = {
-  email: 'user@example.com',
+  email: 'user@example.sk',
   password: '123',
 };
 let token;
 let tokenOld;
 
 describe('User router: ', function() {
+  before((done) => {
+    done();
+  });
   after(done => {
     User.find({email: testUser.email}).remove(() => {done()});
   });
@@ -96,6 +99,21 @@ describe('User router: ', function() {
       });
   });
 
+  it('try to change password with invalid pass', (done) => {
+    chai.request(api)
+      .post('/user/changepass')
+      .set('Accept','application/json')
+      .set('Authorization', 'Bearer ' + token)
+      .send({password: '144431', newPassword: 'abc'})
+      .end((err, res) => {
+        res.should.have.status(400);
+        res.body.error.should.not.be.empty;
+        // res.body.should.be.a('object');
+        // res.body.data.should.be.a('object');
+        done();
+      });
+  });
+
   it('should change password', (done) => {
     chai.request(api)
       .post('/user/changepass')
@@ -104,6 +122,8 @@ describe('User router: ', function() {
       .send({password: testUser.password, newPassword: 'abc'})
       .end((err, res) => {
         res.should.have.status(200);
+        res.body.data.token.should.not.be.empty;
+        res.body.data.token.should.not.equal(tokenOld);
         // res.body.should.be.a('object');
         // res.body.data.should.be.a('object');
         done();

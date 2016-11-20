@@ -4,19 +4,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
 const User = require('../models/user');
-const jwt = require('jsonwebtoken');
-const config = require('./config');
 const validate = require('../../utils/validation');
-
-
-function createToken(userId) {
-  return jwt.sign({
-      id: userId,
-      hash: Math.ceil((Math.random() *10000)),
-    }, config.tokenSecret, {
-      expiresIn: 120
-    });
-}
 
 passport.serializeUser((user, done) => {
   done(null, user.id);
@@ -34,8 +22,6 @@ passport.use(new BearerStrategy(
       return done(null, false);
     }
     User.findOne({ token: token }, function (err, user) {
-      // console.log('ERROR');
-      // console.log(user);
       if (err) { return done(err); }
       if (!user) { return done(null, false); }
       // TODO: check info
@@ -46,23 +32,6 @@ passport.use(new BearerStrategy(
     });
   }
 ));
-
-// passport.use('local-changePass', new BearerStrategy(
-//   function(token, done) {
-//     if (token.length < 1) {
-//       return done(null, false);
-//     }
-//     User.findOne({ token: token }, function (err, user) {
-//       if (err) { return done(err); }
-//       if (!user) { return done(null, false); }
-//       // TODO: check info
-//       return done(null, user, {
-//         scope: user._id,
-//         token_id: user.token,
-//       });
-//     });
-//   }
-// ));
 
 passport.use('local-signup', new LocalStrategy({
   usernameField: 'email',
@@ -84,18 +53,19 @@ passport.use('local-signup', new LocalStrategy({
     } else {
       const newUser = new User();
 
-      const userToken = createToken(newUser._id);
+      // const userToken = createToken(newUser._id);
       newUser.email = email;
       newUser.password = newUser.generateHash(password);
       newUser.authorized = false;
-      newUser.token = userToken;
-      newUser.save((error) => {
+      newUser.token = newUser.generateToken();
+      const save = newUser.save((error) => {
         if (error) {
           throw error;
         } else {
           return done(null, newUser);
         }
       });
+      // save.then(done(null, newUser));
     }
   });
 }));
@@ -110,26 +80,20 @@ passport.use('local-login', new LocalStrategy({
   if (invalidEmail) {
     return done(null, false, { status: 400, error: invalidEmail });
   }
-  User.findOne({ email:  email }, (err, user) => {
+  User.authenticate(email, password, (err, user) => {
     if (err) {
       return done(err);
     }
-
     if (!user) {
-      return done(null, false, { status: 401, error: 'No user found.' });
+      return done(null, false, { status: 401, error: 'login or password are incorrect' });
     }
-
-    if (!user.validPassword(password)) {
-      return done(null, false, { status: 401, error: 'Oops! Wrong password.' });
-    }
-
-    user.token = createToken(user._id);
+    user.token = user.generateToken();
     user.save((error) => {
       if (error) {
         throw error;
       } else {
         return done(null, user);
       }
-    })
+    });
   });
 }));

@@ -11,6 +11,8 @@ require('./config/passport');
 const routes = require('./routes');
 
 if (config.mongoose) {
+  // https://github.com/Automattic/mongoose/issues/4291
+  mongoose.Promise = global.Promise;
   mongoose.connect(config.mongoDbUrl);
 }
 
