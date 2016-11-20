@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt-nodejs');
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');
 
-let userSchema = mongoose.Schema({
+const userSchema = mongoose.Schema({
   email: {type: String, unique: true },
   password: String,
   authorized: {type: Boolean, default: false},
