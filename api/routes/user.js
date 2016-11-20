@@ -30,9 +30,7 @@ router.get('/login', (req, res) => {
 
 router.post('/changepass', passport.authenticate('bearer', { session: false }),
     function(req, res) {
-      // TODO: change also token
       const body = req.body;
-      // console.log(body);
       const erPass = validate(body.password, 'password').isRequired().isString().noSpace().exec();
       const erPassNew = validate(body.newPassword, 'new password').isRequired().isString().noSpace().exec();
       if (erPass || erPassNew) {
@@ -42,16 +40,13 @@ router.post('/changepass', passport.authenticate('bearer', { session: false }),
           error: error,
         });
       }
-      User.changePass(req.user.id, body.password, body.newPassword, (err, user, invalid) => {
+      req.user.changePass(body.password, body.newPassword, (err, user) => {
         if (err) {
-          console.log('error');
-          console.log(err);
-          return res.status(500).send();
-        }
-        if (invalid) {
+          // console.log('error');
+          // console.log(err);
           return res.status(400).json({
             success: false,
-            error: invalid,
+            error: err,
           });
         }
         if (user) {

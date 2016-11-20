@@ -4,6 +4,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
 const User = require('../models/user');
+const Token = require('../models/token');
 const validate = require('../../utils/validation');
 
 passport.serializeUser((user, done) => {
@@ -88,6 +89,7 @@ passport.use('local-login', new LocalStrategy({
       return done(null, false, { status: 401, error: 'login or password are incorrect' });
     }
     user.token = user.generateToken();
+    user.lastLogin = Date.now();
     user.save((error) => {
       if (error) {
         throw error;

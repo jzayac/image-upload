@@ -1,7 +1,6 @@
 'use strict'
 
 const chai = require('chai');
-// const should = chai.should();
 const expect = chai.expect;
 const User = require('../user');
 
@@ -11,7 +10,7 @@ const testUser = {
 };
 let testModel;
 
-describe('User model: ', function() {
+describe('User model: ', () => {
   before((done) => {
     testModel = new User();
     testModel.email = testUser.email;

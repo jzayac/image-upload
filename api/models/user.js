@@ -1,7 +1,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt-nodejs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');
 
@@ -17,9 +17,8 @@ const userSchema = mongoose.Schema({
   },
 });
 
-userSchema.pre('save', function(next) {
-  let user = this;
-  user.lastLogin = Date.now();
+userSchema.pre('save', function(next, done) {
+  this.lastLogin = Date.now();
   next();
 });
 
@@ -32,7 +31,8 @@ userSchema.methods.generateHash = function(password) {
 userSchema.methods.validPassword = function(password) {
   const isCompare = bcrypt.compareSync(password, this.password);
   return isCompare;
-};
+}
+
 userSchema.methods.generateToken = function() {
   return jwt.sign({
       id: this._id,
@@ -40,6 +40,17 @@ userSchema.methods.generateToken = function() {
     }, config.tokenSecret, {
       expiresIn: 120
     });
+};
+
+userSchema.methods.changePass = function(oldPass, newPass, cb) {
+  if (!this.validPassword(oldPass)) {
+    return cb('invalid password', false);
+  }
+  this.password = this.generateHash(newPass);
+  this.token = this.generateToken();
+  this.save((error) => {
+    return cb(error, this);
+  });
 }
 
 // userSchema.methods.changePass = function(newPass, callback) {
@@ -52,28 +63,6 @@ userSchema.methods.generateToken = function() {
 //   user.email = "test@test.com";
 //   user.save(callback);
 // };
-userSchema.statics.changePass = function(id, oldPass, newPass, cb) {
-  this.findById(id, (err, user) => {
-    if (err) {
-      return cb(err, null);
-    }
-    if (user == null) {
-      return cb(null, false);
-    }
-    if (!user.validPassword(oldPass)) {
-      return cb(null, false, 'invalid password');
-    }
-    user.password = user.generateHash(newPass);
-    user.token = user.generateToken();
-    user.save((error) => {
-      if (error) {
-        return cb(error, false);
-      }
-      return cb(null, user);
-    });
-  });
-}
-
 userSchema.statics.authenticate = function(email, password, cb) {
   const query = this.findOne();
   query.where('email').equals(email);
@@ -92,15 +81,5 @@ userSchema.statics.authenticate = function(email, password, cb) {
     }
   });
 }
-// userSchema.statics.createUser = function() {
-//
-// }
-// userSchema.static.lastLogin = function(callback) {
-//   let user = this;
-//   user.lastLogin = Date.now();
-//   user.save(() => {
-//     callback();
-//   });
-// };
 
-module.exports = mongoose.model('user', userSchema);
+module.exports = mongoose.model('users', userSchema);

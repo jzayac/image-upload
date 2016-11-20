@@ -108,8 +108,7 @@ describe('User router: ', function() {
       .end((err, res) => {
         res.should.have.status(400);
         res.body.error.should.not.be.empty;
-        // res.body.should.be.a('object');
-        // res.body.data.should.be.a('object');
+        // console.log(res.body);
         done();
       });
   });
