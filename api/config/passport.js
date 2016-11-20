@@ -34,6 +34,8 @@ passport.use(new BearerStrategy(
       return done(null, false);
     }
     User.findOne({ token: token }, function (err, user) {
+      // console.log('ERROR');
+      // console.log(user);
       if (err) { return done(err); }
       if (!user) { return done(null, false); }
       // TODO: check info
@@ -44,6 +46,23 @@ passport.use(new BearerStrategy(
     });
   }
 ));
+
+// passport.use('local-changePass', new BearerStrategy(
+//   function(token, done) {
+//     if (token.length < 1) {
+//       return done(null, false);
+//     }
+//     User.findOne({ token: token }, function (err, user) {
+//       if (err) { return done(err); }
+//       if (!user) { return done(null, false); }
+//       // TODO: check info
+//       return done(null, user, {
+//         scope: user._id,
+//         token_id: user.token,
+//       });
+//     });
+//   }
+// ));
 
 passport.use('local-signup', new LocalStrategy({
   usernameField: 'email',

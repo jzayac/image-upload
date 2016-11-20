@@ -1,43 +1,29 @@
 'use strict'
 
 const express = require('express');
-// const session = require('express-session');
-// const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const passport = require('passport');
 const morgan = require('morgan');
-// const passportConf = require('./config/passport');
 const mongoose = require('mongoose');
 const config = require('./config/config');
 
 require('./config/passport');
-const imageRouter = require('./routes/image');
-const userRouter = require('./routes/user');
-
+const routes = require('./routes');
 
 if (config.mongoose) {
   mongoose.connect(config.mongoDbUrl);
 }
-// passportConf(passport);
-
 
 const app = express();
 
-// app.use(cookieParser());
 app.use(bodyParser.json());
 app.use( bodyParser.urlencoded({ extended: true }) );
-// app.use(session({
-//   secret: config.sessionSecret,
-//   resave: false,
-//   saveUninitialized: false,
-//   cookie: { maxAge: 60000 }
-// }));
 
 app.use(passport.initialize());
-// app.use(passport.session());
 
-app.use('/image', imageRouter);
-app.use('/user', userRouter);
+for (const route in routes) {
+  app.use('/' + route, routes[route]);
+}
 
 app.post('/test', (req, res) => {
   // console.log(req.body);
@@ -50,7 +36,6 @@ app.get('/', (req, res) => {
 });
 
 app.use((req, res) => {
-//  console.log(req.originalUrl);
   res.status(404).json({ status: 'not found'});
 });
 

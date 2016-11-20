@@ -54,6 +54,9 @@ describe('User router: ', function() {
       .set('Accept','application/json')
       .set('Authorization', 'Bearer ' + token)
       .end((err, res) => {
+        res.should.have.status(200);
+        res.body.should.be.a('object');
+        res.body.message.should.equal('ok');
         User.findOne({token: token}, (err, user) => {
           if (!err && !user) {
             done();
@@ -89,6 +92,20 @@ describe('User router: ', function() {
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.data.should.be.a('object');
+        done();
+      });
+  });
+
+  it('should change password', (done) => {
+    chai.request(api)
+      .post('/user/changepass')
+      .set('Accept','application/json')
+      .set('Authorization', 'Bearer ' + token)
+      .send({password: testUser.password, newPassword: 'abc'})
+      .end((err, res) => {
+        res.should.have.status(200);
+        // res.body.should.be.a('object');
+        // res.body.data.should.be.a('object');
         done();
       });
   });

@@ -27,6 +27,32 @@ router.get('/login', (req, res) => {
 //     });
 //   });
 
+router.post('/changepass', passport.authenticate('bearer', { session: false }),
+    function(req, res) {
+      // console.log(arguments[1]);
+      // console.log(req.user);
+      User.findOne(req.user.id, (err, user) => {
+        // console.log(user.generateHash)
+        console.log(user);
+        res.status(200).json(user);
+      });
+      // res.status(200).json({});
+
+      // if (err) {
+      //   // console.log(err);
+      //   return res.status(500).json({error: 'o_O oh nooooooooo'});
+      // }
+      // if (!user) {
+      //   return res.status(401).json({ success: false, error: 'authentication failed' });
+      // }
+      // // console.log(user);
+      // User.findOne({token: user.token}, (err, user) => {
+      //   // console.log(user.generateHash)
+      //   res.status(200).json(user);
+      // });
+    }
+);
+
 router.get('/token', (req, res, next) => {
   passport.authenticate('bearer', { session: false }, (err, user, info) => {
     if (err) {
@@ -51,6 +77,7 @@ router.get('/loadauth', (req, res) => {
     data: req.user || null,
   });
 });
+
 
 router.post('/login', (req, res, next) => {
   passport.authenticate('local-login', (err, user, info) => {
