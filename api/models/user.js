@@ -56,10 +56,12 @@ userSchema.methods.removeTokenByIdx = function(idx, cb) {
 
 userSchema.methods.removeToken = function(accessToken, cb) {
   this.getUsedToken(accessToken, (err, token, idx) => {
-    if (err) { return cb (err, null); }
+    if (err) {
+       return cb (err, null);
+    }
     if (token) {
       this.removeTokenByIdx(idx, (error, user) => {
-        cb(error, user);
+        return cb(error, user);
       });
     }
   });
@@ -88,16 +90,19 @@ userSchema.methods.getUsedToken = function(accessToken, cb) {
       return token;
     }
   });
-  if (usedToken) {
-    if (usedToken.id) {
-      if ( Date.now() < (new Date(usedToken.time)).getTime()) {
-        return cb(null, usedToken.id, idxToken);
-      } else {
-        this.removeTokenByIdx(idxToken, (error, user) => {
-          return cb(error, null, 'session expired please login again');
-        })
-      }
+  if (usedToken && usedToken.id) {
+    const dateToken = (new Date(usedToken.time)).getTime();
+    const dateNow = Date.now();
+    if ( dateNow < dateToken) {
+      return cb(null, usedToken.id, idxToken);
+    // TODO: is less then one hour ubate token with new time
+    // } else if (Date)
+    } else {
+      this.removeTokenByIdx(idxToken, (error, user) => {
+        return cb(error || 'session expired please login again', null, 'session expired please login again');
+      });
     }
+  } else {
     return cb(null, false, 'token not found');
   }
 }
@@ -142,8 +147,8 @@ userSchema.statics.authorized = function(accessToken, cb) {
     if (!user) {
       return cb(null, false, 'accessToken not found' );
     }
-    user.getUsedToken(accessToken, (error, token) => {
-      return cb(error, user);
+    user.getUsedToken(accessToken, (error, token, info) => {
+      return cb(error, user, info);
     });
   });
 }

@@ -57,7 +57,7 @@ passport.use('local-signup', new LocalStrategy({
       newUser.email = email;
       newUser.password = newUser.generateHash(password);
       newUser.authorized = false;
-      newUser.tokens = newUser.generateToken();
+      newUser.tokens.push(newUser.generateToken());
       const save = newUser.save((error) => {
         if (error) {
           throw error;
