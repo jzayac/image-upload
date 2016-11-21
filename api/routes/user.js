@@ -43,8 +43,6 @@ router.post('/changepass', passport.authenticate('bearer', { session: false }),
       }
       req.user.changePass(body.password, body.newPassword, (err, user) => {
         if (err) {
-          // console.log('error');
-          // console.log(err);
           return res.status(400).json({
             success: false,
             error: err,
@@ -70,9 +68,6 @@ router.get('/token', (req, res, next) => {
   passport.authenticate('bearer', { session: false }, (err, user, info) => {
     if (err) {
       return next(err); // will generate a 500 error
-    }
-    if (info && !user) {
-      return res.status(401).json({error: info});
     }
     if (!user) {
       return res.status(401).json({ success: false, error: 'authentication failed' });
@@ -117,11 +112,11 @@ router.post('/login', (req, res, next) => {
 router.get('/logout', (req, res, next) => {
   passport.authenticate('bearer', { session: false }, (err, user, info) => {
     if (user) {
-      User.update({ _id: user.id }, { $set: { token: '' }}, (err) => {
+      user.removeToken(info.tokenId, (error, userUpdate) => {
         if (err) {
           return res.status(500).json({});
         }
-        if (user) {
+        if (userUpdate) {
           return res.status(200).json({
             message: 'ok',
           });

@@ -22,8 +22,9 @@ passport.use(new BearerStrategy(
     if (token.length < 1) {
       return done(null, false);
     }
-    User.authorized(token, (err, user, token) => {
-      if (err || !user) { return done(null, user, err); }
+    User.authorized(token, (err, user) => {
+      if (err) { return done(err, null); }
+      if (!user) { return done (null, false)}
       return done(null, user, {
         scope: user._id,
         tokenId: token,

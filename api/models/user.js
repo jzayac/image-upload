@@ -46,6 +46,20 @@ userSchema.methods.findAndUpdateToken = function() {
   // TODO: obsolete or
 }
 
+userSchema.methods.removeToken = function(accessToken, cb) {
+  this.getUsedToken(accessToken, (err, token, idx) => {
+    if (err) { return cb (err, null); }
+    if (token) {
+      this.tokens.splice(idx, 1);
+      this.save((error, user) => {
+        return cb(error, user);
+      });
+    }
+  });
+
+
+  // this.update({_id: ObjectId("58331f6298f03230507b714e")}, {$pull:{tokens: {_id: ObjectId("58331f9131929f30607d7540")}}}, false, true)
+}
 // check if password match then save new password
 userSchema.methods.changePass = function(oldPass, newPass, cb) {
   if (!this.validPassword(oldPass)) {
@@ -72,7 +86,7 @@ userSchema.methods.getUsedToken = function(accessToken, cb) {
   if (usedToken) {
     if (usedToken.id) {
       if ( Date.now() < (new Date(usedToken.time)).getTime()) {
-        return cb(null, usedToken.id);
+        return cb(null, usedToken.id, idxToken);
       } else {
         // expired token need to remove
         return cb('session expired please login again');
@@ -127,7 +141,7 @@ userSchema.statics.authorized = function(accessToken, cb) {
       return cb('accessToken not found', false);
     }
     user.getUsedToken(accessToken, (error, token) => {
-      return cb(error, user, token.id);
+      return cb(error, user);
     });
   });
 }
