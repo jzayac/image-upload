@@ -20,15 +20,6 @@ router.get('/login', (req, res) => {
   });
 });
 
-// router.get('/token', passport.authenticate('bearer', { session: false }),
-//   function(req, res) {
-//     console.log('token auth');
-//     res.json({
-//       success: true,
-//       data: req.user
-//     });
-//   });
-
 router.post('/changepass', passport.authenticate('bearer', { session: false }),
     function(req, res) {
       const body = req.body;
