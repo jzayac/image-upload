@@ -6,7 +6,6 @@ const multer = require('multer');
 
 //const validate = require('../../utils/validation');
 
-//const isAuthenticated = require('../utils/isAuthenticated');
 
 
 const storage = multer.diskStorage({ //multers disk storage settings

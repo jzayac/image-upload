@@ -5,11 +5,12 @@ const api = require('../../api');
 const chaiHttp = require('chai-http');
 const should = chai.should();
 const User = require('../../models/user');
+const utils = require('../../utils/utils');
 
 
 chai.use(chaiHttp);
 const testUser = {
-  email: 'user@example.sk',
+  email: ('test' + utils.uid(2) + 'user@example.sk'),
   password: '123',
 };
 let token;
@@ -21,6 +22,7 @@ describe('User router: ', function() {
   });
   after(done => {
     User.find({email: testUser.email}).remove(() => {done()});
+    // done();
   });
 
   it('invalid user email', (done) => {
@@ -40,7 +42,6 @@ describe('User router: ', function() {
       .set('Accept','application/json')
       .send(testUser)
       .end((err, res) => {
-        // console.log(res.body);
         res.should.have.status(200);
         res.body.should.be.a('object');
         res.body.data.email.should.equal(testUser.email);
@@ -50,6 +51,19 @@ describe('User router: ', function() {
         done();
       });
   });
+
+  // it('should get user information', (done) => {
+  //   chai.request(api)
+  //     .get('/user/token')
+  //     .set('Accept','application/json')
+  //     .set('Authorization', 'Bearer ' + token)
+  //     .end((err, res) => {
+  //       res.should.have.status(200);
+  //       res.body.should.be.a('object');
+  //       res.body.data.should.be.a('object');
+  //       done();
+  //     });
+  // });
 
   it('user logout', (done) => {
     chai.request(api)
@@ -128,5 +142,4 @@ describe('User router: ', function() {
         done();
       });
   });
-
 });

@@ -4,7 +4,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
 const User = require('../models/user');
-const Token = require('../models/token');
+// const Token = require('../models/token');
 const validate = require('../../utils/validation');
 
 passport.serializeUser((user, done) => {
@@ -22,15 +22,13 @@ passport.use(new BearerStrategy(
     if (token.length < 1) {
       return done(null, false);
     }
-    User.findOne({ token: token }, function (err, user) {
-      if (err) { return done(err); }
-      if (!user) { return done(null, false); }
-      // TODO: check info
+    User.authorized(token, (err, user, token) => {
+      if (err || !user) { return done(null, user, err); }
       return done(null, user, {
         scope: user._id,
-        token_id: user.token,
-      });
-    });
+        tokenId: token,
+      })
+    })
   }
 ));
 
@@ -54,11 +52,10 @@ passport.use('local-signup', new LocalStrategy({
     } else {
       const newUser = new User();
 
-      // const userToken = createToken(newUser._id);
       newUser.email = email;
       newUser.password = newUser.generateHash(password);
       newUser.authorized = false;
-      newUser.token = newUser.generateToken();
+      newUser.tokens = newUser.generateToken();
       const save = newUser.save((error) => {
         if (error) {
           throw error;
@@ -88,8 +85,8 @@ passport.use('local-login', new LocalStrategy({
     if (!user) {
       return done(null, false, { status: 401, error: 'login or password are incorrect' });
     }
-    user.token = user.generateToken();
     user.lastLogin = Date.now();
+    user.tokens.push(user.generateToken());
     user.save((error) => {
       if (error) {
         throw error;

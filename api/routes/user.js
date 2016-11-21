@@ -6,11 +6,12 @@ const User = require('../models/user');
 const validate = require('../../utils/validation');
 let router = express.Router();
 
-function userInformation(user) {
+function userInformation(user, token) {
+  const idx = user.tokens.length;
   return {
     email: user.email,
-    token: user.token,
-  }
+    token: token || user.tokens[idx -1].id,
+  };
 }
 
 router.get('/login', (req, res) => {
@@ -84,7 +85,6 @@ router.get('/token', (req, res, next) => {
 });
 
 router.get('/loadauth', (req, res) => {
-  // console.log(req.header('Authorization'));
   res.json({
     data: req.user || null,
   });
@@ -119,17 +119,17 @@ router.get('/logout', (req, res, next) => {
     if (user) {
       User.update({ _id: user.id }, { $set: { token: '' }}, (err) => {
         if (err) {
-          res.status(500).json({});
-        } else {
-          res.status(200).json({
+          return res.status(500).json({});
+        }
+        if (user) {
+          return res.status(200).json({
             message: 'ok',
           });
         }
+        return res.status(500).json({});
       });
     } else {
-      res.status(200).json({
-        message: 'ok',
-      });
+      return res.status(401).send();
     }
   })(req, res, next);
 });
@@ -140,7 +140,6 @@ router.post('/signup', (req, res, next) => {
       return next(err); // will generate a 500 error
     }
     if (info) {
-      // TODO: better understanding of passport is needed
       return res.status(info.status || '401').json({error: info.error || info.message});
     }
     if (!user) {
@@ -157,20 +156,6 @@ router.post('/signup', (req, res, next) => {
     });
   })(req, res, next);
 });
-
-router.get('/user', isAuthenticated, (req, res) => {
-  res.status(200).json({
-    data: 'send from server',
-  });
-});
-
-
-function isAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.json({ error: 'Unauthorized'});
-}
 
 
 module.exports = router;
