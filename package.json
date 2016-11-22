@@ -14,11 +14,8 @@
     "body-parser": "^1.15.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.14.0",
-    "express-busboy": "^4.0.0",
-    "express-fileupload": "0.0.5",
     "mongoose": "^4.6.8",
     "multer": "^1.2.0",
-    "npm": "^4.0.2",
     "passport": "^0.3.2",
     "passport-http-bearer": "^1.0.1",
     "passport-local": "^1.0.0"
