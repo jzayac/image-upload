@@ -4,22 +4,27 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const config = require('../config/config');
 const utils = require('../utils/utils');
+const roles = require('../utils/roles').roles;
+
+const USER_ROLE =  roles.user;
+const ADMIN_ROLE = roles.admin;
 
 const userSchema = mongoose.Schema({
   email: {type: String, unique: true },
   password: String,
-  authorized: {type: Boolean, default: false},
+  authorized: {type: Boolean, default: true},
   registred: {type: Date, default: Date.now},
   lastLogin: {type: Date, default: Date.now},
+  lastUpdate: {type: Date, default: Date.now},
   tokens: [{
       id: {type: String, required: true, default: ''},
       time: {type: Date, defailt: Date.now},
   }],
-  role: {type: Number, default: 2},
+  role: {type: Number, default: USER_ROLE},
 });
 
 userSchema.pre('save', function(next, done) {
-  this.lastLogin = Date.now();
+  this.lastUpdate = Date.now();
   next();
 });
 
@@ -99,7 +104,8 @@ userSchema.methods.getUsedToken = function(accessToken, cb) {
     // } else if (Date)
     } else {
       this.removeTokenByIdx(idxToken, (error, user) => {
-        return cb(error || 'session expired please login again', null, 'session expired please login again');
+        const message = 'session expired please login again';
+        return cb(error || message , null, message);
       });
     }
   } else {
@@ -144,6 +150,9 @@ userSchema.statics.authorized = function(accessToken, cb) {
       console.error(err);
       return cb(err, null);
     }
+    if (!user.authorized) {
+      return cb(null, null, 'not authorized');
+    }
     if (!user) {
       return cb(null, false, 'accessToken not found' );
     }
@@ -152,5 +161,13 @@ userSchema.statics.authorized = function(accessToken, cb) {
     });
   });
 }
+
+// userSchema.statics.roleUser = function() {
+//   return USER_ROLE;
+// }
+//
+// userSchema.statics.roleAdmin = function() {
+//   return ADMIN_ROLE;
+// }
 
 module.exports = mongoose.model('users', userSchema);

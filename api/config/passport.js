@@ -29,10 +29,12 @@ passport.use(new BearerStrategy(
         scope: user._id,
         tokenId: token,
         message: message,
-      })
-    })
+        role: user.role,
+      });
+    });
   }
 ));
+
 
 passport.use('local-signup', new LocalStrategy({
   usernameField: 'email',
@@ -54,15 +56,19 @@ passport.use('local-signup', new LocalStrategy({
     } else {
       const newUser = new User();
 
+      const token = newUser.generateToken()
       newUser.email = email;
       newUser.password = newUser.generateHash(password);
       newUser.authorized = false;
-      newUser.tokens.push(newUser.generateToken());
-      const save = newUser.save((error) => {
+      newUser.tokens.push(token);
+      const save = newUser.save((error, userObj) => {
         if (error) {
           throw error;
         } else {
-          return done(null, newUser);
+          return done(null, userObj, {
+            scope: userObj._id,
+            tokenId: token.id,
+          });
         }
       });
       // save.then(done(null, newUser));
@@ -87,13 +93,17 @@ passport.use('local-login', new LocalStrategy({
     if (!user) {
       return done(null, false, { status: 401, error: 'login or password are incorrect' });
     }
+    const token = user.generateToken();
     user.lastLogin = Date.now();
-    user.tokens.push(user.generateToken());
-    user.save((error) => {
+    user.tokens.push(token);
+    user.save((error, newUser) => {
       if (error) {
         throw error;
       } else {
-        return done(null, user);
+        return done(null, newUser, {
+          scope: newUser._id,
+          tokenId: token.id,
+        });
       }
     });
   });

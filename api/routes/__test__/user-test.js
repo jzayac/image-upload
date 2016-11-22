@@ -16,7 +16,7 @@ const testUser = {
 let token;
 let tokenOld;
 
-describe('User router: ', function() {
+describe('User router:', function() {
   before((done) => {
     done();
   });
@@ -42,13 +42,15 @@ describe('User router: ', function() {
       .set('Accept','application/json')
       .send(testUser)
       .end((err, res) => {
-        res.should.have.status(200);
-        res.body.should.be.a('object');
-        res.body.data.email.should.equal(testUser.email);
-        res.body.data.should.have.property('token');
-        res.body.data.token.should.not.be.empty;
-        token = res.body.data.token;
+        User.update({email: testUser.email}, {$set: {authorized: true}}, (err, user) => {
+          res.should.have.status(200);
+          res.body.should.be.a('object');
+          res.body.data.email.should.equal(testUser.email);
+          res.body.data.should.have.property('token');
+          res.body.data.token.should.not.be.empty;
+          token = res.body.data.token;
         done();
+        });
       });
   });
 

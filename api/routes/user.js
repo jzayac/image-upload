@@ -4,7 +4,7 @@ const express = require('express');
 const passport = require('passport');
 const User = require('../models/user');
 const validate = require('../../utils/validation');
-let router = express.Router();
+const router = express.Router();
 
 function userInformation(user, token) {
   const idx = user.tokens.length;
@@ -61,7 +61,7 @@ router.get('/token', (req, res, next) => {
       return next(err); // will generate a 500 error
     }
     if (!user) {
-      return res.status(401).json({ success: false, error: 'authentication failed' });
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
     res.status(200).json({
       success: true,
@@ -82,7 +82,7 @@ router.post('/login', (req, res, next) => {
     if (err) {
       return next(err); // will generate a 500 error
     }
-    if (info) {
+    if (!info.tokenId) {
       return res.status(info.status).json({error: info.error});
     }
     if (! user) {
@@ -94,7 +94,7 @@ router.post('/login', (req, res, next) => {
       }
       res.json({
         success: true,
-        data: userInformation(user),
+        data: userInformation(user, info.tokenId),
       });
     });
   })(req, res, next);
@@ -125,7 +125,7 @@ router.post('/signup', (req, res, next) => {
     if (err) {
       return next(err); // will generate a 500 error
     }
-    if (info) {
+    if (!info.tokenId) {
       return res.status(info.status || '401').json({error: info.error || info.message});
     }
     if (!user) {

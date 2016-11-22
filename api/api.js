@@ -27,13 +27,7 @@ for (const route in routes) {
   app.use('/' + route, routes[route]);
 }
 
-app.post('/test', (req, res) => {
-  // console.log(req.body);
-  res.status(200).json(Object.assign(req.body, {server: true}));
-});
-
 app.get('/', (req, res) => {
-  console.log('get root');
   res.json({'stauts': 'ok'});
 });
 
