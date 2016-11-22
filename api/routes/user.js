@@ -55,27 +55,18 @@ router.post('/changepass', passport.authenticate('bearer', { session: false }),
     }
 );
 
-router.get('/token', (req, res, next) => {
-  passport.authenticate('bearer', { session: false }, (err, user, info) => {
-    if (err) {
-      return next(err); // will generate a 500 error
-    }
-    if (!user) {
-      return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
-    res.status(200).json({
-      success: true,
-      data: user,
-    })
-  })(req, res, next);
-});
-
-router.get('/loadauth', (req, res) => {
-  res.json({
-    data: req.user || null,
+router.get('/token', passport.authenticate('bearer', { session: false }), (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: req.user,
   });
 });
 
+// router.get('/loadauth', (req, res) => {
+//   res.json({
+//     data: req.user || null,
+//   });
+// });
 
 router.post('/login', (req, res, next) => {
   passport.authenticate('local-login', (err, user, info) => {

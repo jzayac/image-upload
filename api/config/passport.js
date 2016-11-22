@@ -4,6 +4,7 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
 const User = require('../models/user');
+const roles = require('../utils/roles');
 // const Token = require('../models/token');
 const validate = require('../../utils/validation');
 
@@ -17,8 +18,7 @@ passport.deserializeUser((id, done) => {
   });
 });
 
-passport.use(new BearerStrategy(
-  function(token, done) {
+function bearerStrategyHelper(token, done) {
     if (token.length < 1) {
       return done(null, false);
     }
@@ -32,9 +32,29 @@ passport.use(new BearerStrategy(
         role: user.role,
       });
     });
+}
+
+passport.use(new BearerStrategy(
+  function(token, done) {
+    bearerStrategyHelper(token, (err, user, message) => {
+      done(err, user, message);
+    });
   }
 ));
 
+passport.use('bearer-user', new BearerStrategy(
+  function(token, done) {
+    bearerStrategyHelper(token, (err, user, message) => {
+      if (err || !user) {
+        return done(err, user, message);
+      }
+      if (!roles.isUser(user.role)) {
+        return done(null, false);
+      }
+      return done(err, user, message);
+    });
+  }
+));
 
 passport.use('local-signup', new LocalStrategy({
   usernameField: 'email',

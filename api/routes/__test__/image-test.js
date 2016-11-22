@@ -43,22 +43,9 @@ describe('Image router:', function() {
       .set('Accept','application/json')
       .set('Authorization', 'Bearer ' + token)
       .end((err, res) => {
+        console.log(res.body);
         res.should.have.status(400);
-        res.body.should.be.a('object');
-        res.body.message.should.be.equal('no file');
         done();
       });
   });
-  // it('should access with user role', (done) => {
-  //   chai.request(api)
-  //     .post('/image/upload')
-  //     .set('Accept','application/json')
-  //     .set('Authorization', 'Bearer ' + token)
-  //     .end((err, res) => {
-  //       res.should.have.status(400);
-  //       res.body.should.be.a('object');
-  //       res.body.message.should.be.equal('no file');
-  //       done();
-  //     });
-  // });
 });

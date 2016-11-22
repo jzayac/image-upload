@@ -2,7 +2,6 @@
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const config = require('../config/config');
 const utils = require('../utils/utils');
 const roles = require('../utils/roles').roles;
 
@@ -161,13 +160,5 @@ userSchema.statics.authorized = function(accessToken, cb) {
     });
   });
 }
-
-// userSchema.statics.roleUser = function() {
-//   return USER_ROLE;
-// }
-//
-// userSchema.statics.roleAdmin = function() {
-//   return ADMIN_ROLE;
-// }
 
 module.exports = mongoose.model('users', userSchema);

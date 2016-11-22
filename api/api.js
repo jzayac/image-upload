@@ -6,6 +6,7 @@ const passport = require('passport');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const config = require('./config/config');
+const bb = require('express-busboy');
 
 require('./config/passport');
 const routes = require('./routes');
@@ -18,6 +19,7 @@ if (config.mongoose) {
 
 const app = express();
 
+// bb.extend(app);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
