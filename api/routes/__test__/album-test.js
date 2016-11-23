@@ -85,7 +85,7 @@ describe('Album router', () => {
 
   it('shodul get album detail', (done) => {
     chai.request(api)
-      .get('/album/get/' + albumsId[0])
+      .get('/album/' + albumsId[0])
       .set('Accept','application/json')
       .set('Authorization', 'Bearer ' + testUser.token)
       .end((err, res) => {
@@ -119,6 +119,21 @@ describe('Album router', () => {
         res.should.have.status(200);
         res.body.data.should.be.a('object');
         done();
+      });
+  });
+
+  it('shodul remove album', (done) => {
+    chai.request(api)
+      .delete('/album/' + albumsId[0])
+      .set('Accept','application/json')
+      .set('Authorization', 'Bearer ' + testUser.token)
+      .end((err, res) => {
+        res.should.have.status(200);
+        Albums.findOne({_id: albumsId[0]}, (err, album) => {
+          expect(err).to.be.a('null');
+          expect(album).to.be.a('null');
+          done();
+        });
       });
   });
 });

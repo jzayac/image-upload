@@ -13,7 +13,6 @@ function validate(value, name) {
 
   function continueValid() {
     if (!required && isEmpty(value)) {
-    console.log('kurva');
       return ;
     }
   }
