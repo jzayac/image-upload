@@ -16,6 +16,20 @@ exports.uid = function(len) {
  return buf.join('');
 }
 
-exports.resposneHelper = function(done) {
+exports.stringToUrl = function(str) {
+  let url = str.trim();
+  url = url.replace(/(\s)/g, '-');
+  return url;
+}
 
+exports.responseHelper = function(res, err, data) {
+  if (err) {
+    res.status(500).send();
+    return false;
+  }
+  if (!data) {
+    res.status(404).send();
+    return false;
+  }
+  return true;
 }

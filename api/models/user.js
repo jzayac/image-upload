@@ -9,7 +9,8 @@ const USER_ROLE =  roles.user;
 const ADMIN_ROLE = roles.admin;
 
 const userSchema = mongoose.Schema({
-  email: {type: String, unique: true },
+  // email: {type: String, unique: true },
+  email: {type: String, index: { unique: true } },
   password: String,
   authorized: {type: Boolean, default: true},
   registred: {type: Date, default: Date.now},

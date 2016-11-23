@@ -14,22 +14,15 @@ function userInformation(user, token) {
   };
 }
 
-router.get('/login', (req, res) => {
-  res.json({
-    router: 'login',
-  });
-});
-
 router.post('/changepass', passport.authenticate('bearer', { session: false }),
     function(req, res) {
       const body = req.body;
       const erPass = validate(body.password, 'password').isRequired().isString().noSpace().exec();
       const erPassNew = validate(body.newPassword, 'new password').isRequired().isString().noSpace().exec();
       if (erPass || erPassNew) {
-        const error = erPass ? erPass.concat(erPassNew || []) : erPassNew.concat(erPass);
         return res.status(400).json({
           sucess: false,
-          error: error,
+          error: [].concat(erPass || [], erPassNew || []),
         });
       }
       req.user.changePass(body.password, body.newPassword, (err, user) => {

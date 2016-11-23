@@ -6,7 +6,6 @@ const chaiHttp = require('chai-http');
 const should = chai.should();
 const User = require('../../models/user');
 const utils = require('../../utils/utils');
-const passport = require('passport');
 const roles = require('../../utils/roles').roles;
 
 
@@ -43,7 +42,7 @@ describe('Image router:', function() {
       .set('Accept','application/json')
       .set('Authorization', 'Bearer ' + token)
       .end((err, res) => {
-        console.log(res.body);
+        // console.log(res.body);
         res.should.have.status(400);
         done();
       });

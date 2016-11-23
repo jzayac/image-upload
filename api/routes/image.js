@@ -33,8 +33,8 @@ const upload = multer({ //multer settings
 });
 
 router.post('/upload', passport.authenticate('bearer-user', { session: false }), upload.single('file'), function(req, res) {
-  console.log(req.files);
-  console.log(req.file);
+  // console.log(req.files);
+  // console.log(req.file);
   // console.log(req.body);
   if (!req.file) {
     return res.status(400).send();
