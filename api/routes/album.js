@@ -20,7 +20,7 @@ function validInput(name, description) {
 
 router.get('/list', authorizedUser, (req, res, next) => {
   const query = Albums.find({});
-  query.where('accessRole').lt(req.user.role + 1);
+  query.where('visitors.userId').equals(req.user._id);
   query.exec((err, albums) => {
     if (respHelper(req, err, albums)) {
       res.status(200).json({
@@ -32,9 +32,8 @@ router.get('/list', authorizedUser, (req, res, next) => {
 });
 
 router.get('/:id', authorizedUser, (req, res) => {
-  // db.albums.find({$or: [{comments: 0},{name: "test3"}, {role: {$lt: 24}}] }).pretty()
   const query = Albums.findOne({_id: req.params.id});
-  query.where('accessRole').lt(req.user.role + 1);
+  query.where('visitors.userId').equals(req.user._id);
   query.exec((err, album) => {
     if (respHelper(res, err, album)) {
       res.status(200).json({
@@ -72,8 +71,34 @@ router.post('/create', authorizedUser, (req, res) => {
 });
 
 router.put('/:id', authorizedUser, (req, res) => {
+  Albums.findOne({_id: req.params.id}, (err, album) =>{
+    if (!respHelper(res, err, album)) {
+      return;
+    }
+    if (album.ownerId === req.user._id) {
+      return res.status(401).send();
+    }
 
-  res.send('not implemented');
+    const name = req.body.name && req.body.name.trim();
+    const description = req.body.description && req.body.description.trim();
+    const isInvalid = validInput(name, description);
+    if (isInvalid) {
+      return res.status(400).json({
+        error: isInvalid,
+      });
+    }
+    album.name = name;
+    album.description = desciption;
+
+    album.save((err) => {
+      if (respHelper(res, err, album)) {
+        return res.status(200).json({
+          success: true,
+          data: album,
+        })
+      }
+    });
+  });
 });
 
 router.delete('/:id', authorizedUser, (req, res) => {

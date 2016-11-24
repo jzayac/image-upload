@@ -16,10 +16,10 @@ const albumSchema = mongoose.Schema({
   comments: {type: Number, default: 0},
   ownerId: {type: mongoose.Schema.ObjectId, required: true},
   description: {type: String, default: ''},
-  images: [{
-    id: { type: mongoose.Schema.ObjectId, required: true },
+  visitors: [{
+    userId: { type: mongoose.Schema.ObjectId, required: true },
+    canUpload: {type: Boolean, default: false },
   }],
-  accessRole: {type: Number, default: roles.user}
 });
 
 albumSchema.pre('save', function(next, done) {
@@ -31,8 +31,8 @@ albumSchema.pre('save', function(next, done) {
 //
 // }
 
-albumSchema.statics.findAndRemoveAll = function(id, user, cb) {
-  const query = this.findOne({_id: id});
+albumSchema.statics.findAndRemoveAll = function(albumId, user, cb) {
+  const query = this.findOne({_id: albumId});
   if (!isAdmin(user.role)) {
     query.where('ownerId').equals(user._id);
   }
@@ -41,15 +41,16 @@ albumSchema.statics.findAndRemoveAll = function(id, user, cb) {
     if (err) {
       return cb(err);
     }
-    if (album.images.length === 0 ) {
-      album.remove((err) => {
-        return cb(null);
-      });
-    } else {
-      Images.remove({album: id}, (err) => {
-        return cb(err);
-      });
-    }
+    // Images.remove({album: albumId})
+    // if (album.images.length === 0 ) {
+    album.remove((err) => {
+      return cb(null);
+    });
+    // } else {
+    //   Images.remove({album: albumId}, (err) => {
+    //     return cb(err);
+    //   });
+    // }
   });
 }
 
@@ -60,6 +61,7 @@ albumSchema.statics.save = function(param, cb) {
   albumObj.ownerId = param.userId;
   albumObj.description = param.description || '';
   albumObj.accessRole = param.accessRole || roles.user;
+  albumObj.visitors.push({userId: param.userId});
   albumObj.save((err, album) => {
     cb(err, album);
   });

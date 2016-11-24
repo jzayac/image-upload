@@ -9,9 +9,6 @@ const imageSchema = mongoose.Schema({
   ownerId: {type: mongoose.Schema.ObjectId, required: true},
   description: {type: String, default: ''},
   album: { type: mongoose.Schema.ObjectId, required: true },
-  // gallery: [{
-  //   id: { type: mongoose.Schema.ObjectId, required: true },
-  // }],
 });
 
 // imageSchema.statics.removeImages = function(id, (cb) => {

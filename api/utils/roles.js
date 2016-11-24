@@ -1,7 +1,7 @@
 'use strict'
 
-const USER_ROLE = 20;
-const ADMIN_ROLE = 100;
+const USER_ROLE = 2;
+const ADMIN_ROLE = 5;
 
 function isUser(role) {
   return role >= USER_ROLE;

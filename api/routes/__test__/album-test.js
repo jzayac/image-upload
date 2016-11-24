@@ -74,17 +74,10 @@ describe('Album router', () => {
       .set('Accept','application/json')
       .set('Authorization', 'Bearer ' + testUser.token)
       .end((err, res) => {
-        Albums.find({}, function(err, d) {
-        // console.log(d)  ;
         res.should.have.status(200);
         res.body.data.should.be.a('array');
         expect(res.body.data).to.have.lengthOf(2);
         done();
-        })
-        // res.should.have.status(200);
-        // res.body.data.should.be.a('array');
-        // expect(res.body.data).to.have.lengthOf(2);
-        // done();
       });
   });
 
