@@ -10,16 +10,16 @@ const ADMIN_ROLE = roles.admin;
 
 const userSchema = mongoose.Schema({
   // email: {type: String, unique: true },
-  email: {type: String, index: { unique: true } },
-  password: String,
-  authorized: { type: Boolean, default: true },
-  registred: { type: Date, default: Date.now },
-  lastLogin: { type: Date, default: Date.now },
-  lastUpdate: { type: Date, default: Date.now },
-  // nickName { type: String required: true },
+  email: {type: String, index: { unique: true }},
+  password: {type: String, required: true},
+  authorized: {type: Boolean, default: false},
+  registred: {type: Date, default: Date.now},
+  lastLogin: {type: Date, default: Date.now},
+  lastUpdate: {type: Date, default: Date.now},
+  nickName: {type: String, required: true, unique: true},
   tokens: [{
-      id: { type: String, required: true, default: '' },
-      time: { type: Date, defailt: Date.now },
+      id: {type: String, required: true, default: ''},
+      time: {type: Date, defailt: Date.now},
   }],
   role: {type: Number, default: USER_ROLE},
 });

@@ -7,6 +7,7 @@ const User = require('../user');
 const testUser = {
   email: 'test@model.com',
   password: '567',
+  nick: 'kreten',
 };
 let testModel;
 
@@ -15,6 +16,8 @@ describe('User model: ', () => {
     testModel = new User();
     testModel.email = testUser.email;
     testModel.password = testModel.generateHash(testUser.password);
+    testModel.nickName = testUser.nick;
+    testModel.authorized = true;
     done();
   });
   afterEach((done) => {

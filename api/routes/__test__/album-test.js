@@ -8,26 +8,24 @@ const expect = chai.expect;
 const Albums = require('../../models/album');
 const Users = require('../../models/user');
 const utils = require('../../utils/utils');
-const roles = require('../../utils/roles');
+const roles = require('../../utils/roles').roles;
+const userCreate = require('./userCreate');
 
 chai.use(chaiHttp);
 const albumsId = [];
 const testUser = {
   email: ('test' + utils.uid(2) + 'user@example.sk'),
   password: '123',
+  nick: 'album' + utils.uid(2),
+  role: roles.user,
 };
 
 describe('Album router', () => {
   before((done) => {
-    const newUser = new Users();
-    newUser.email = testUser.email;
-    newUser.password = newUser.generateHash(testUser.password);
-    newUser.role = roles.user;
-    newUser.tokens.push(newUser.generateToken());
     new Promise((resolve, reject) => {
-      newUser.save((err, userObj) => {
-        if (err) {
-          return reject (err);
+      userCreate(testUser, (userObj) => {
+        if (!userObj) {
+          return reject('something wrong')
         }
         testUser.id = userObj._id;
         testUser.token = userObj.tokens[0].id;
@@ -36,7 +34,7 @@ describe('Album router', () => {
     }).then(() => {
       const param = {
         userId: testUser.id,
-        name: 'test',
+        name: 'test' + utils.uid(2),
       }
       Albums.save(param,(err, album) => {
         albumsId.push(album._id);
@@ -45,7 +43,7 @@ describe('Album router', () => {
     }).then(() => {
       const param = {
         userId: testUser.id,
-        name: 'test2',
+        name: 'test2' + utils.uid(2),
       }
       Albums.save(param,(err, album) => {
         albumsId.push(album._id);
@@ -76,10 +74,17 @@ describe('Album router', () => {
       .set('Accept','application/json')
       .set('Authorization', 'Bearer ' + testUser.token)
       .end((err, res) => {
+        Albums.find({}, function(err, d) {
+        // console.log(d)  ;
         res.should.have.status(200);
         res.body.data.should.be.a('array');
         expect(res.body.data).to.have.lengthOf(2);
         done();
+        })
+        // res.should.have.status(200);
+        // res.body.data.should.be.a('array');
+        // expect(res.body.data).to.have.lengthOf(2);
+        // done();
       });
   });
 
@@ -114,7 +119,7 @@ describe('Album router', () => {
       .post('/album/create')
       .set('Accept','application/json')
       .set('Authorization', 'Bearer ' + testUser.token)
-      .send({name: 'test3'})
+      .send({name: 'test3' + utils.uid(2)})
       .end((err, res) => {
         res.should.have.status(200);
         res.body.data.should.be.a('object');

@@ -20,7 +20,7 @@ function validInput(name, description) {
 
 router.get('/list', authorizedUser, (req, res, next) => {
   const query = Albums.find({});
-  query.select('_id name path comments description');
+  query.where('accessRole').lt(req.user.role + 1);
   query.exec((err, albums) => {
     if (respHelper(req, err, albums)) {
       res.status(200).json({
@@ -32,10 +32,11 @@ router.get('/list', authorizedUser, (req, res, next) => {
 });
 
 router.get('/:id', authorizedUser, (req, res) => {
-  return res.status(400).send('not implemented');
+  // db.albums.find({$or: [{comments: 0},{name: "test3"}, {role: {$lt: 24}}] }).pretty()
   const query = Albums.findOne({_id: req.params.id});
+  query.where('accessRole').lt(req.user.role + 1);
   query.exec((err, album) => {
-    if (respHelper(req, err, album)) {
+    if (respHelper(res, err, album)) {
       res.status(200).json({
         success: true,
         data: album,

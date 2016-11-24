@@ -59,7 +59,7 @@ albumSchema.statics.save = function(param, cb) {
   albumObj.path = utils.stringToUrl(param.name);
   albumObj.ownerId = param.userId;
   albumObj.description = param.description || '';
-  albumObj.accessRole = param.accessRole;
+  albumObj.accessRole = param.accessRole || roles.user;
   albumObj.save((err, album) => {
     cb(err, album);
   });

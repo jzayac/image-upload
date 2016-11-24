@@ -17,10 +17,14 @@ function validate(value, name) {
     }
   }
 
+  function errOut(message) {
+    return name + ' ' + message;
+  }
+
   that.isRequired = function() {
     if (isEmpty(value)) {
       value = '';
-      error.push(name + ' is required');
+      error.push(errOut('is required'));
       required = true;
     }
     return this;
@@ -31,7 +35,7 @@ function validate(value, name) {
       return this;
     }
     if ( !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
-      error.push(name + ' invalid');
+      error.push(errOut('invalid'));
     }
     return this;
   }
@@ -41,7 +45,7 @@ function validate(value, name) {
       return this;
     }
     if (!(/^([a-zA-Z0-9 _-]+)$/).test(value)) {
-      error.push(name + ' not valid. only letters, numbers, _- is allowed');
+      error.push(errOut('not valid. only letters, numbers, _- is allowed'));
     }
     return this;
   }
@@ -50,7 +54,17 @@ function validate(value, name) {
       return this;
     }
     if (value.indexOf(' ') >= 0) {
-      error.push(name + ' not valid. empty spaces not allowed');
+      error.push(errOut('not valid. empty spaces not allowed'));
+    }
+    return this;
+  }
+
+  that.max = function(val) {
+    if (continueValid()) {
+      return this;
+    }
+    if (value.length > val) {
+      error.push(errOut('max length ' + val));
     }
     return this;
   }
@@ -64,7 +78,7 @@ function validate(value, name) {
       return o[fieldName].toLowerCase() == value.toLowerCase();
     });
     if (idx !== -1) {
-      error.push(name + ' must be unique');
+      error.push(errOut('must be unique'));
     }
     return this;
   }

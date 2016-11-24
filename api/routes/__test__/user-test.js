@@ -12,6 +12,7 @@ chai.use(chaiHttp);
 const testUser = {
   email: ('test' + utils.uid(2) + 'user@example.sk'),
   password: '123',
+  nick: 'ferko' + utils.uid(2),
 };
 let token;
 let tokenOld;

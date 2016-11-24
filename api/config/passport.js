@@ -5,7 +5,6 @@ const LocalStrategy = require('passport-local').Strategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
 const User = require('../models/user');
 const roles = require('../utils/roles');
-// const Token = require('../models/token');
 const validate = require('../../utils/validation');
 
 passport.serializeUser((user, done) => {
@@ -62,9 +61,16 @@ passport.use('local-signup', new LocalStrategy({
   passReqToCallback: true,
 },
 (req, email, password, done) => {
-  const invalidEmail = validate(email, 'email').isRequired().isEmail().exec();
-  if (invalidEmail) {
-    return done(null, false, { status: 400, error: invalidEmail });
+
+  const invalidEmail = validate(email, 'email').isRequired().isEmail().max(23).exec();
+  let nick = req.body.nick || '';
+  nick = nick.trim();
+  const invalidNick = validate(req.body.nick, 'nick').isRequired().isString().max(15).exec();
+  if (invalidEmail || invalidNick) {
+    return done(null, false, {
+      status: 400,
+      error: [].concat(invalidEmail || [], invalidNick || [] ),
+    });
   }
   User.findOne({ email:  email }, (err, user) => {
     if (err) {
@@ -80,6 +86,7 @@ passport.use('local-signup', new LocalStrategy({
       newUser.email = email;
       newUser.password = newUser.generateHash(password);
       newUser.authorized = false;
+      newUser.nickName = nick;
       newUser.tokens.push(token);
       const save = newUser.save((error, userObj) => {
         if (error) {
