@@ -1,10 +1,10 @@
-'use stric'
+'use strict'
 
 const mongoose = require('mongoose');
 const utils = require('../utils/utils');
 const roles = require('../utils/roles').roles;
 const isAdmin = require('../utils/roles').isAdmin;
-const Images = require('./image');
+const Image = require('./image');
 
 // const
 
@@ -31,6 +31,23 @@ albumSchema.pre('save', function(next, done) {
 //
 // }
 
+albumSchema.statics.canUserUpload = function(albumId, userId, cb)  {
+  const query = this.findOne({_id: albumId});
+  query.exec((err, album) => {
+    if (err) {
+      return cb(err, fasle);
+    }
+    let canUpload = false;
+    album.visitors.some((user, idx) => {
+      if (user.userId.toString() == userId && user.canUpload === true) {
+        canUpload = true;
+        return;
+      }
+    });
+    return cb(null, canUpload);
+  });
+}
+
 albumSchema.statics.findAndRemoveAll = function(albumId, user, cb) {
   const query = this.findOne({_id: albumId});
   if (!isAdmin(user.role)) {
@@ -41,13 +58,13 @@ albumSchema.statics.findAndRemoveAll = function(albumId, user, cb) {
     if (err) {
       return cb(err);
     }
-    // Images.remove({album: albumId})
+    // Image.remove({album: albumId})
     // if (album.images.length === 0 ) {
     album.remove((err) => {
       return cb(null);
     });
     // } else {
-    //   Images.remove({album: albumId}, (err) => {
+    //   Image.remove({album: albumId}, (err) => {
     //     return cb(err);
     //   });
     // }
@@ -61,7 +78,7 @@ albumSchema.statics.save = function(param, cb) {
   albumObj.ownerId = param.userId;
   albumObj.description = param.description || '';
   albumObj.accessRole = param.accessRole || roles.user;
-  albumObj.visitors.push({userId: param.userId});
+  albumObj.visitors.push({userId: param.userId, canUpload: true});
   albumObj.save((err, album) => {
     cb(err, album);
   });

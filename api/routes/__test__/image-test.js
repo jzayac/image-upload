@@ -3,11 +3,14 @@
 const chai = require('chai');
 const api = require('../../api');
 const chaiHttp = require('chai-http');
-const should = chai.should();
 const User = require('../../models/user');
+const Album = require('../../models/album');
+const Image = require('../../models/image');
 const utils = require('../../utils/utils');
 const roles = require('../../utils/roles').roles;
 const userCreate = require('./userCreate');
+const request = require('supertest');
+const fs = require('fs');
 
 
 chai.use(chaiHttp);
@@ -20,18 +23,43 @@ const testUser = {
 
 let token;
 let user;
+let albumId;
 
 
 describe('Image router:', function() {
   before((done) => {
-    userCreate(testUser, (userObj) => {
-      user = userObj;
-      token = userObj.tokens[0].id;
+    new Promise((resolve, reject) => {
+      userCreate(testUser, (userObj) => {
+        if (!userObj) {
+          reject();
+        }
+        user = userObj;
+        token = userObj.tokens[0].id;
+        resolve(userObj);
+      });
+    }).then((userObj) => {
+      const param = {
+        userId: userObj._id,
+        name: 'test' + utils.uid(2),
+      }
+      Album.save(param,(err, album) => {
+        albumId = album._id;
+        return;
+      });
+    }).then(() => {
       done();
+    }).catch(() => {
+      throw new Error('something go wrong');
     });
   });
   after(done => {
-    User.find({email: testUser.email}).remove(() => {done()});
+    User.find({email: testUser.email}).remove(() => {
+      Album.remove({ownerId: user._id}, (err) => {
+        if (err)
+          return null;
+        done()
+      });
+    });
   });
 
   it('should access with user role', (done) => {
@@ -44,5 +72,18 @@ describe('Image router:', function() {
         res.should.have.status(400);
         done();
       });
+  });
+
+  it('should upload file', (done) => {
+    request(api)
+      .post('/image/upload')
+      .set('Authorization', 'Bearer ' + token)
+      // .field('album', albumId)
+      .field('data', '{"albumId": "' + albumId + '"}')
+      .attach('file', 'uploads/smile.png')
+      .end((err, res) => {
+        res.should.have.status(200);
+        done();
+      })
   });
 });

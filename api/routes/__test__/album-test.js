@@ -5,7 +5,7 @@ const api = require('../../api');
 const chaiHttp = require('chai-http');
 const should = chai.should();
 const expect = chai.expect;
-const Albums = require('../../models/album');
+const Album = require('../../models/album');
 const Users = require('../../models/user');
 const utils = require('../../utils/utils');
 const roles = require('../../utils/roles').roles;
@@ -36,7 +36,7 @@ describe('Album router', () => {
         userId: testUser.id,
         name: 'test' + utils.uid(2),
       }
-      Albums.save(param,(err, album) => {
+      Album.save(param,(err, album) => {
         albumsId.push(album._id);
         return;
       });
@@ -45,7 +45,7 @@ describe('Album router', () => {
         userId: testUser.id,
         name: 'test2' + utils.uid(2),
       }
-      Albums.save(param,(err, album) => {
+      Album.save(param,(err, album) => {
         albumsId.push(album._id);
         return;
       });
@@ -56,7 +56,7 @@ describe('Album router', () => {
     });
   });
   after(done => {
-     Albums.remove({ownerId: testUser.id}, (err) => {
+     Album.remove({ownerId: testUser.id}, (err) => {
        if (err)
          return null;
 
@@ -127,7 +127,7 @@ describe('Album router', () => {
       .set('Authorization', 'Bearer ' + testUser.token)
       .end((err, res) => {
         res.should.have.status(200);
-        Albums.findOne({_id: albumsId[0]}, (err, album) => {
+        Album.findOne({_id: albumsId[0]}, (err, album) => {
           expect(err).to.be.a('null');
           expect(album).to.be.a('null');
           done();

@@ -3,7 +3,7 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const Albums = require('../models/album');
+const Album = require('../models/album');
 const respHelper = require('../utils/utils').responseHelper;
 const validate = require('../../utils/validation');
 
@@ -19,10 +19,10 @@ function validInput(name, description) {
 }
 
 router.get('/list', authorizedUser, (req, res, next) => {
-  const query = Albums.find({});
+  const query = Album.find({});
   query.where('visitors.userId').equals(req.user._id);
   query.exec((err, albums) => {
-    if (respHelper(req, err, albums)) {
+    if (respHelper(res, err, albums)) {
       res.status(200).json({
         success: true,
         data: albums,
@@ -32,7 +32,7 @@ router.get('/list', authorizedUser, (req, res, next) => {
 });
 
 router.get('/:id', authorizedUser, (req, res) => {
-  const query = Albums.findOne({_id: req.params.id});
+  const query = Album.findOne({_id: req.params.id});
   query.where('visitors.userId').equals(req.user._id);
   query.exec((err, album) => {
     if (respHelper(res, err, album)) {
@@ -60,7 +60,7 @@ router.post('/create', authorizedUser, (req, res) => {
     userId: req.user._id,
     accessRole: req.user.role,
   }
-  Albums.save(params, (err, album) => {
+  Album.save(params, (err, album) => {
     if (respHelper(res, err, album)) {
       res.status(200).json({
         success: true,
@@ -71,7 +71,7 @@ router.post('/create', authorizedUser, (req, res) => {
 });
 
 router.put('/:id', authorizedUser, (req, res) => {
-  Albums.findOne({_id: req.params.id}, (err, album) =>{
+  Album.findOne({_id: req.params.id}, (err, album) =>{
     if (!respHelper(res, err, album)) {
       return;
     }
@@ -102,7 +102,7 @@ router.put('/:id', authorizedUser, (req, res) => {
 });
 
 router.delete('/:id', authorizedUser, (req, res) => {
-  Albums.findAndRemoveAll(req.params.id, req.user,(err) => {
+  Album.findAndRemoveAll(req.params.id, req.user,(err) => {
     if (respHelper(res, err, {})) {
       res.status(200).send({
         success: true,

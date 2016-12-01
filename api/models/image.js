@@ -8,7 +8,7 @@ const imageSchema = mongoose.Schema({
   comments: {type: Number, default: 0},
   ownerId: {type: mongoose.Schema.ObjectId, required: true},
   description: {type: String, default: ''},
-  album: { type: mongoose.Schema.ObjectId, required: true },
+  albumId: { type: mongoose.Schema.ObjectId, required: true },
 });
 
 // imageSchema.statics.removeImages = function(id, (cb) => {
