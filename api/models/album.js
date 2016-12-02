@@ -30,21 +30,34 @@ albumSchema.pre('save', function(next, done) {
 // albumSchema.methods.pushImage = function(imageId, cb) {
 //
 // }
-
-albumSchema.statics.canUserUpload = function(albumId, userId, cb)  {
+albumSchema.statics.isVisitor = function(albumId, userId, cb) {
   const query = this.findOne({_id: albumId});
+  query.where('visitors.userId').equals(userId);
+  query.exec((err, album) => {
+    cb(err, album);
+  });
+}
+
+albumSchema.statics.canUserUpload = function(albumId, userId, cb) {
+  // const query = this.findOne({_id: albumId, comments: 0});
+  const query = this.findOne({_id: albumId}, {visitors: {$elemMatch: {userId: userId, canUpload: true}} });
   query.exec((err, album) => {
     if (err) {
-      return cb(err, fasle);
+      console.log(err);
+      return cb(err, false);
     }
-    let canUpload = false;
-    album.visitors.some((user, idx) => {
-      if (user.userId.toString() == userId && user.canUpload === true) {
-        canUpload = true;
-        return;
-      }
-    });
-    return cb(null, canUpload);
+    if (!album) {
+      return cb(null, false);
+    }
+    return cb(null, album);
+    // let canUpload = false;
+    // album.visitors.some((user, idx) => {
+    //   if (user.userId.toString() == userId && user.canUpload === true) {
+    //     canUpload = true;
+    //     return;
+    //   }
+    // });
+    // return cb(null, canUpload);
   });
 }
 

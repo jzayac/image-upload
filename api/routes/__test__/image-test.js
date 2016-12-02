@@ -3,6 +3,7 @@
 const chai = require('chai');
 const api = require('../../api');
 const chaiHttp = require('chai-http');
+const expect = chai.expect;
 const User = require('../../models/user');
 const Album = require('../../models/album');
 const Image = require('../../models/image');
@@ -24,6 +25,7 @@ const testUser = {
 let token;
 let user;
 let albumId;
+let imageId;
 
 
 describe('Image router:', function() {
@@ -78,12 +80,48 @@ describe('Image router:', function() {
     request(api)
       .post('/image/upload')
       .set('Authorization', 'Bearer ' + token)
-      // .field('album', albumId)
       .field('data', '{"albumId": "' + albumId + '"}')
       .attach('file', 'uploads/smile.png')
       .end((err, res) => {
         res.should.have.status(200);
+        res.body.data._id.should.not.be.empty;
+        imageId = res.body.data._id;
         done();
-      })
+      });
+  });
+
+  it('should return list of images', (done) => {
+    request(api)
+      .get('/image/albumlist/' + albumId)
+      .set('Authorization', 'Bearer ' + token)
+      .end((err, res) => {
+        expect(res.body.data).to.have.lengthOf(1);
+        res.should.have.status(200);
+        done();
+      });
+  });
+
+  it('should update image description', (done) => {
+    const desc = 'test desc';
+    request(api)
+      .post('/image/update')
+      .set('Authorization', 'Bearer ' + token)
+      .send({imageId: imageId, description: desc})
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.data.description.should.be.equal(desc);
+        done();
+      });
+  });
+  it('should delete image', (done) => {
+    const desc = 'test desc';
+    request(api)
+      .delete('/image/' + imageId)
+      .set('Authorization', 'Bearer ' + token)
+      .end((err, res) => {
+        res.should.have.status(200);
+        // res.body.data.description.should.be.equal(desc);
+        done();
+      });
   });
 });

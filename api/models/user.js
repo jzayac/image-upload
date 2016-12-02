@@ -21,6 +21,11 @@ const userSchema = mongoose.Schema({
       id: {type: String, required: true, default: ''},
       time: {type: Date, defailt: Date.now},
   }],
+  friends: [{
+    userId: { type: mongoose.Schema.ObjectId, required: true },
+    from: {type: Date, default: Date.now},
+  }],
+  photo: {type: String, default: ''},
   role: {type: Number, default: USER_ROLE},
 });
 

@@ -22,11 +22,28 @@ exports.stringToUrl = function(str) {
   return url;
 }
 
-exports.responseHelper = function(res, err, data) {
+exports.responseHelper = function(res, err, data, info) {
   if (err) {
     res.status(500).send();
     return false;
   }
+  // probably not good idea
+  // if (!err && data === false) {
+  //   res.status(401).send();
+  //   return false;
+  //
+  // }
+  if (info) {
+    if (info.error) {
+      res.status(info.status).json({
+        error: info.error,
+      });
+    } else {
+      res.status(info.status).send();
+    }
+    return false;
+  }
+
   if (!data) {
     res.status(404).send();
     return false;

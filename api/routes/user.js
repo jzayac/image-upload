@@ -6,6 +6,8 @@ const User = require('../models/user');
 const validate = require('../../utils/validation');
 const router = express.Router();
 
+const authorizedUser = passport.authenticate('bearer-user', { session: false});
+
 function userInformation(user, token) {
   const idx = user.tokens.length;
   return {
@@ -127,5 +129,20 @@ router.post('/signup', (req, res, next) => {
   })(req, res, next);
 });
 
+router.get('/friends', authorizedUser, (req, res, next) => {
+  const user = req.user;
+  const resp = [];
+  user.friends.forEach((friend) => {
+    const query = User.findOne({_id: friend.userId});
+    query.select('nickName photo');
+    query.exec((err, friend) => {
+      // TODO: if err - remove person
+      if (friend) {
+        resp.push(friend);
+      }
+    })
+  });
+  res.status(200).json({data: resp});
+});
 
 module.exports = router;

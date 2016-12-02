@@ -8,6 +8,7 @@ const Image = require('../models/image');
 const Album = require('../models/album');
 const path = require('path');
 const respHelper = require('../utils/utils').responseHelper;
+const validate = require('../../utils/validation');
 
 const authorizedUser = passport.authenticate('bearer-user', { session: false});
 
@@ -32,7 +33,7 @@ const upload = multer({ //multer settings
     }
     const data = JSON.parse(req.body.data);
     Album.canUserUpload(data.albumId, req.user._id, (err, canUpload) => {
-      if (canUpload === false) {
+      if (!canUpload) {
         return cb(null, false);
       }
       const ext = path.extname(file.originalname);
@@ -60,13 +61,69 @@ router.post('/upload', authorizedUser, upload.single('file'), function(req, res)
   img.ownerId = req.user._id;
   img.albumId = data.albumId,
   img.description = data.description,
-  img.save((err, img) => {
-    if (respHelper(res, err, img)) {
+  img.save((err, image) => {
+    if (respHelper(res, err, image)) {
       res.status(200).json({
         success: true,
-        data: img,
+        data: image,
       });
     }
+  });
+});
+
+
+router.get('/albumlist/:albumId', authorizedUser, (req, res) => {
+  const albumId = req.params.albumId;
+  Album.isVisitor(albumId, req.user._id, (err, album) => {
+    if (!respHelper(res, err, album)) {
+      return;
+    }
+    const query = Image.find({albumId: albumId});
+    query.exec((error, images) => {
+      if (respHelper(res, err, album)) {
+        res.status(200).json({
+          data: images,
+        });
+      }
+    });
+  });
+});
+
+router.post('/update', authorizedUser, (req, res) => {
+  const imageId = req.body.imageId;
+  const description = req.body.description && req.body.description.trim();
+  const errDesc = validate(description, 'description').isString().exec();
+  if (errDesc) {
+    return res.status(400).json({
+      error: errDesc,
+    });
+  }
+  Image.isOwner(imageId, req.user._id, (err, img, info) => {
+    if(!respHelper(res, err, img, info)) {
+      return;
+    };
+    img.description = description;
+    img.save((error, image) => {
+      if(respHelper(res, error, image)) {
+        res.status(200).json({
+          data: image,
+        });
+      }
+    });
+  });
+});
+
+router.delete('/:imageId', authorizedUser, (req, res) => {
+  const imageId = req.params.imageId;
+  Image.isOwner(imageId, req.user._id, (err, img, info) => {
+    if(!respHelper(res, err, img, info)) {
+      return;
+    };
+    Image.removeWithFile(img, (error) => {
+      if(respHelper(res, error, {})) {
+        res.status(200).send();
+      }
+    })
   });
 });
 
