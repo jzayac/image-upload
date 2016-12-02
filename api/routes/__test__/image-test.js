@@ -12,6 +12,7 @@ const roles = require('../../utils/roles').roles;
 const userCreate = require('./userCreate');
 const request = require('supertest');
 const fs = require('fs');
+const path = require('path');
 
 
 chai.use(chaiHttp);
@@ -22,6 +23,7 @@ const testUser = {
   role: roles.user,
 };
 
+const imgPath = path.join(__dirname, 'img/smile.png');
 let token;
 let user;
 let albumId;
@@ -81,7 +83,7 @@ describe('Image router:', function() {
       .post('/image/upload')
       .set('Authorization', 'Bearer ' + token)
       .field('data', '{"albumId": "' + albumId + '"}')
-      .attach('file', 'uploads/smile.png')
+      .attach('file', imgPath)
       .end((err, res) => {
         res.should.have.status(200);
         res.body.data._id.should.not.be.empty;

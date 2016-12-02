@@ -72,10 +72,13 @@ albumSchema.statics.findAndRemoveAll = function(albumId, user, cb) {
       return cb(err);
     }
     // Image.remove({album: albumId})
-    // if (album.images.length === 0 ) {
-    album.remove((err) => {
-      return cb(null);
+    Image.find({album: albumId}).remove((err) => {
+      // if (err)
+      album.remove((err) => {
+        return cb(null);
+      });
     });
+    // if (album.images.length === 0 ) {
     // } else {
     //   Image.remove({album: albumId}, (err) => {
     //     return cb(err);

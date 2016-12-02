@@ -9,7 +9,7 @@ exports.uid = function(len) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charlen = chars.length;
 
- for (let i = 0; i < len; ++i) {
+ for (let i = 1; i < len + 1; i++) {
    buf.push(chars[getRandomInt(0, charlen - 1)]);
  }
 

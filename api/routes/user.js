@@ -145,4 +145,9 @@ router.get('/friends', authorizedUser, (req, res, next) => {
   res.status(200).json({data: resp});
 });
 
+router.post('/friends', authorizedUser, (req, res, next) => {
+  const friends = req.body.friends;
+  // user.friends
+});
+
 module.exports = router;

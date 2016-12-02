@@ -1,14 +1,19 @@
 'use strict'
 
-const USER_ROLE = 2;
-const ADMIN_ROLE = 5;
+const USER_ROLE = 4;
+const EDITOR_ROLE = 2;
+const ADMIN_ROLE = 1;
+
+function isEditor(role) {
+  return role <= EDITOR_ROLE;
+}
 
 function isUser(role) {
-  return role >= USER_ROLE;
+  return role <= USER_ROLE;
 }
 
 function isAdmin(role) {
-  return role === ADMIN_ROLE
+  return role === ADMIN_ROLE;
 }
 
 module.exports = {
@@ -18,4 +23,5 @@ module.exports = {
   },
   isUser: isUser,
   isAdmin: isAdmin,
+  isEditor: isEditor,
 }

@@ -9,7 +9,7 @@ const validate = require('../../utils/validation');
 
 const authorizedUser = passport.authenticate('bearer-user', { session: false});
 
-function validInput(name, description) {
+function validateNameDesc(name, description) {
   const errName = validate(name, 'album name').isRequired().isString().exec();
   const errDesc = validate(description, 'description').isString().exec();
   if (errName || errDesc) {
@@ -21,6 +21,7 @@ function validInput(name, description) {
 router.get('/list', authorizedUser, (req, res, next) => {
   const query = Album.find({});
   query.where('visitors.userId').equals(req.user._id);
+  query.select('name path description comments created');
   query.exec((err, albums) => {
     if (respHelper(res, err, albums)) {
       res.status(200).json({
@@ -47,7 +48,7 @@ router.get('/:id', authorizedUser, (req, res) => {
 router.post('/create', authorizedUser, (req, res) => {
   const name = req.body.name && req.body.name.trim();
   const description = req.body.description && req.body.description.trim();
-  const valid = validInput(name, description);
+  const valid = validateNameDesc(name, description);
   if (valid) {
     return res.status(400).json({
       error: valid,
@@ -70,7 +71,7 @@ router.post('/create', authorizedUser, (req, res) => {
   });
 });
 
-router.put('/:id', authorizedUser, (req, res) => {
+router.post('/:id', authorizedUser, (req, res) => {
   Album.findOne({_id: req.params.id}, (err, album) =>{
     if (!respHelper(res, err, album)) {
       return;
@@ -81,7 +82,7 @@ router.put('/:id', authorizedUser, (req, res) => {
 
     const name = req.body.name && req.body.name.trim();
     const description = req.body.description && req.body.description.trim();
-    const isInvalid = validInput(name, description);
+    const isInvalid = validateNameDesc(name, description);
     if (isInvalid) {
       return res.status(400).json({
         error: isInvalid,
