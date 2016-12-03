@@ -55,6 +55,20 @@ passport.use('bearer-user', new BearerStrategy(
   }
 ));
 
+passport.use('bearer-admin', new BearerStrategy(
+  function(token, done) {
+    bearerStrategyHelper(token, (err, user, message) => {
+      if (err || !user) {
+        return done(err, user, message);
+      }
+      if (!roles.isAdmin(user.role)) {
+        return done(null, false);
+      }
+      return done(err, user, message);
+    });
+  }
+));
+
 passport.use('local-signup', new LocalStrategy({
   usernameField: 'email',
   passwordField: 'password',

@@ -4,9 +4,11 @@ const express = require('express');
 const passport = require('passport');
 const User = require('../models/user');
 const validate = require('../../utils/validation');
+const respHelper = require('../utils/utils').responseHelper;
 const router = express.Router();
 
 const authorizedUser = passport.authenticate('bearer-user', { session: false});
+const authorizedAdmin = passport.authenticate('bearer-admin', { session: false});
 
 function userInformation(user, token) {
   const idx = user.tokens.length;
@@ -145,9 +147,35 @@ router.get('/friends', authorizedUser, (req, res, next) => {
   res.status(200).json({data: resp});
 });
 
-router.post('/friends', authorizedUser, (req, res, next) => {
-  const friends = req.body.friends;
-  // user.friends
+router.get('/list', authorizedUser, (req, res, next) => {
+  const query = User.find({authorized: true});
+  query.where('_id').ne(req.user._id);
+  query.select('nickName photo');
+  query.exec((err, users) => {
+    if(respHelper(res, err, users)) {
+      return res.status(200).json({
+        data: users,
+      });
+    }
+  });
+});
+
+router.post('/addfriend', authorizedUser, (req, res, next) => {
+  const friendId = req.body.friendId;
+  const user = req.user;
+  User.findOne({_id: friendId}, (err, friendObj) => {
+    if (!respHelper(res, err, friendObj)) {
+      return;
+    }
+
+    user.friends.push({userId: friendId});
+    user.save((err, userObj) => {
+      if (!respHelper(res, err, userObj)) {
+        return;
+      }
+      return res.status(200).send();
+    });
+  });
 });
 
 module.exports = router;

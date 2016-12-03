@@ -145,4 +145,16 @@ describe('User router:', function() {
         done();
       });
   });
+
+  it('should get list of users', (done) => {
+    chai.request(api)
+      .get('/user/list')
+      .set('Authorization', 'Bearer ' + token)
+      .end((err, res) => {
+        res.should.have.status(200);
+        res.body.data.should.not.be.empty;
+        res.body.data.should.to.be.instanceof(Array);
+        done();
+      });
+  });
 });

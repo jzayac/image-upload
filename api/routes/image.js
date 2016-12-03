@@ -12,6 +12,8 @@ const respHelper = require('../utils/utils').responseHelper;
 const validate = require('../../utils/validation');
 const gm = require('gm');
 
+const authorizedUser = passport.authenticate('bearer-user', { session: false});
+
 const resizeImage = function(req, res, next) {
   if (!req.file) {
     return next();
@@ -54,8 +56,6 @@ const resizeImage = function(req, res, next) {
     next(err);
   });
 }
-
-const authorizedUser = passport.authenticate('bearer-user', { session: false});
 
 const storage = multer.diskStorage({ //multers disk storage settings
   destination: function (req, file, cb) {
@@ -126,6 +126,7 @@ router.get('/albumlist/:albumId', authorizedUser, (req, res) => {
       return;
     }
     const query = Image.find({albumId: albumId});
+    query.select('medium small description comments');
     query.exec((error, images) => {
       if (respHelper(res, err, images)) {
         res.status(200).json({
