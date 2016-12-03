@@ -1,4 +1,4 @@
-'use stric'
+'use strict'
 
 const mongoose = require('mongoose');
 const fs = require('fs');
@@ -27,10 +27,19 @@ imageSchema.statics.isOwner = function(imageId, userId, cb) {
   });
 }
 
+imageSchema.statics.removeByAlbumId = function(albumId, cb) {
+  const query = this.find({alubm: albumId}, (err, images) => {
+    images.forEach((img) => {
+      // this.removeWithFile()
+    });
+    console.log(images);
+  });
+};
+
 imageSchema.statics.removeWithFile = function(img, cb) {
-  // console.log('PATH');
-  // console.log(img.path);
-  // // fs.unlinkSync(img.path);
+  console.log('PATH');
+  console.log(img);
+  // fs.unlinkSync(img.path);
   // TODO: remove path
   this.findOne({_id: img._id}).remove((err) => {
     cb(err);

@@ -104,6 +104,7 @@ describe('Image router:', function() {
   });
 
   it('should update image description', (done) => {
+    return done();
     const desc = 'test desc';
     request(api)
       .post('/image/update')

@@ -27,12 +27,6 @@ exports.responseHelper = function(res, err, data, info) {
     res.status(500).send();
     return false;
   }
-  // probably not good idea
-  // if (!err && data === false) {
-  //   res.status(401).send();
-  //   return false;
-  //
-  // }
   if (info) {
     if (info.error) {
       res.status(info.status).json({

@@ -6,15 +6,60 @@ const multer = require('multer');
 const passport = require('passport');
 const Image = require('../models/image');
 const Album = require('../models/album');
+const imagesDir = require('../config/config').uploadDir;
 const path = require('path');
 const respHelper = require('../utils/utils').responseHelper;
 const validate = require('../../utils/validation');
+const gm = require('gm');
+
+const resizeImage = function(req, res, next) {
+  if (!req.file) {
+    return next();
+  }
+  const imagePath = req.file.path;
+  new Promise((resolve, reject) => {
+    gm(imagePath).size((err, size) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(size);
+    });
+  }).then((size) => {
+    const medium = gm(imagePath);
+    if (size.widht > 1600) {
+      const scaleSize = Math.floor(1600 / (size.width/size.height));
+      medium.resize(1600, scaleSize)
+    }
+    medium.quality(70).noProfile().write(imagesDir + 'm-' + req.file.filename, (err) => {
+      if (!err) {
+        req.file.medium = imagesDir + 'm-' + req.file.filename;
+      } else {
+        throw err;
+      }
+    });
+    return size;
+  }).then((size) => {
+    const small = gm(imagePath);
+    const scaleSize = Math.floor(200 / (size.width/size.height));
+    small.resize(200, scaleSize);
+    small.quality(70).noProfile().write(imagesDir + 's-' + req.file.filename, (err) => {
+      if (!err) {
+        req.file.small = imagesDir + 's-' + req.file.filename;
+        next();
+      } else {
+        throw err;
+      }
+    });
+  }).catch((err) => {
+    next(err);
+  });
+}
 
 const authorizedUser = passport.authenticate('bearer-user', { session: false});
 
 const storage = multer.diskStorage({ //multers disk storage settings
   destination: function (req, file, cb) {
-    cb(null, './uploads/')
+    cb(null, imagesDir);
   },
   filename: function (req, file, cb) {
     const datetimestamp = Date.now();
@@ -49,7 +94,7 @@ const upload = multer({ //multer settings
 });
 
 
-router.post('/upload', authorizedUser, upload.single('file'), function(req, res) {
+router.post('/upload', authorizedUser, upload.single('file'), resizeImage, function(req, res) {
   if (!req.file) {
     return res.status(400).send();
   }
@@ -61,6 +106,8 @@ router.post('/upload', authorizedUser, upload.single('file'), function(req, res)
   img.ownerId = req.user._id;
   img.albumId = data.albumId,
   img.description = data.description,
+  img.medium = file.medium;
+  img.small = file.small;
   img.save((err, image) => {
     if (respHelper(res, err, image)) {
       res.status(200).json({
@@ -80,7 +127,7 @@ router.get('/albumlist/:albumId', authorizedUser, (req, res) => {
     }
     const query = Image.find({albumId: albumId});
     query.exec((error, images) => {
-      if (respHelper(res, err, album)) {
+      if (respHelper(res, err, images)) {
         res.status(200).json({
           data: images,
         });
